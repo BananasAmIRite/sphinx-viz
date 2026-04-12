@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Osiris P&ID Visualizer",
-  description: "MIT Rocket Team Osiris Hotfire Test Stand P&ID Visualizer",
+  title: "Sphinx Telemetry",
+  description: "MIT Rocket Team SPHINX Telemetry Visualization Dashboard",
 };
 
 export default function RootLayout({

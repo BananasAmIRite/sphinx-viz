@@ -35,7 +35,7 @@ else:
         ports = serial.tools.list_ports.comports()
     port = ports[0][0]
 print(f"SELECTED PORT: {port}")
-serial_port = serial.Serial(port, baudrate=115200, timeout=1)
+serial_port = serial.Serial(port, baudrate=9600, timeout=1)
 
 """ == CONFIGURATION == """
 

@@ -3,6 +3,9 @@ import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { fetch_data } from "./api";
 import Readout from "./readout";
+import HealthPanel from "./health_panel";
+import VecReadout from "./vec_readout";
+import STLModel from "./stl_model";
 
 export default function Home() {
   const [state, updateState] = useState({
@@ -76,23 +79,72 @@ export default function Home() {
     </header>
     {/* MAIN CONTENT */}
     <main className="p-4 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Readout label="Altitude/BMP" value={state.altitude_bmp} unit=" m" />
-        <Readout label="Altitude/ToF" value={state.altitude_tof} unit=" m" />
-        <Readout label="Gyro[X]/LSM" value={state.gyro_lsm[0]} unit=" m°/s" />
-        <Readout label="Gyro[Y]/LSM" value={state.gyro_lsm[1]} unit=" m°/s" />
-        <Readout label="Gyro[Z]/LSM" value={state.gyro_lsm[2]} unit=" m°/s" />
-        <Readout label="Accel[X]/LSM" value={state.accel_lsm[0]} unit=" mg" />
-        <Readout label="Accel[Y]/LSM" value={state.accel_lsm[1]} unit=" mg" />
-        <Readout label="Accel[Z]/LSM" value={state.accel_lsm[2]} unit=" mg" />
-        <Readout label="Heading/BNO" value={state.gyro_bno[0]} unit="°" />
-        <Readout label="Roll/BNO" value={state.gyro_bno[1]} unit="°" />
-        <Readout label="Pitch/BNO" value={state.gyro_bno[2]} unit="°" />
-        <Readout label="Temperature" value={state.temperature} unit=" °C" />
-        <Readout label="Battery Voltage" value={state.esc_voltage} unit=" V" />
-        <Readout label="Servo Voltage" value={state.servo_voltage} unit=" V" />
+      <div className="grid grid-cols-[2fr_3fr] gap-4">
+        <div className="">
+          <div className="text-gray-400 uppercase tracking-widest text-center mb-2">Vehicle View</div>
+          <STLModel url="/sphinx.stl" rotation={
+            [0, Math.PI/8, 0]
+            //[(270 - state.gyro_bno[1]) * Math.PI / 180, state.gyro_bno[2] * Math.PI / 180, 0]
+          } scale={0.3} color="#ff5e66"/>
+          {/* <div className="text-gray-400 uppercase tracking-widest text-center mt-4 mb-2">Human Input</div>
+          <div className="grid grid-cols-3 gap-5">
+            <Image src="/launch.png" width={700} height={700} alt="Launch Command" className="rounded-2xl"/>
+            <Image src="/land.png" width={700} height={700} alt="Land Command" className="rounded-2xl"/>
+            <Image src="/abort.png" width={700} height={700} alt="Abort Command" className="rounded-2xl"/>
+          </div> */}
+          <div className="text-gray-400 uppercase tracking-widest text-center my-2">Control Output</div>
+          <div className="grid grid-cols-3 gap-2">
+            <Readout label="Thrust" value={0} unit=" N"/>
+            <Readout label="w_top" value={0} unit=" rad/s" capitalize={false}/>
+            <Readout label="w_bot" value={0} unit=" rad/s" capitalize={false}/>
+            <Readout label="Moment" value={0} unit=" mNm" />
+            <Readout label="β_y" value={0} unit="°" capitalize={false}/>
+            <Readout label="β_z" value={0} unit="°" capitalize={false}/>
+          </div>
+        </div>
+        <div className="">
+          <div className="text-gray-400 uppercase tracking-widest text-center mb-2">Health</div>
+          <HealthPanel objects={
+            [
+              ["GPS", true],
+              ["RTK", false],
+              ["BMP", false],
+              ["TOF", false],
+              ["LSM", true],
+              ["LIS", false],
+              ["BNO", true],
+              ["AUX", false]
+            ]
+          }/>
+          <div className="text-gray-400 uppercase tracking-widest text-center my-2">State Estimation</div>
+          <div className="grid grid-cols-3 gap-2">
+            <VecReadout label="Position (m)" values={[["x", 0], ["y", 0], ["z", 0]]}/>
+            <VecReadout label="Velocity (mm/s)" values={[["x", 0], ["y", 0], ["z", 0]]}/>
+            <VecReadout label="Quaternion" values={[["w", 0], ["x", 0], ["y", 0], ["z", 0]]}/>
+          </div>
+          <div className="text-gray-400 uppercase tracking-widest text-center my-2">Readouts</div>
+          <div className="grid grid-cols-4 gap-2">
+            <Readout label="Altitude/BMP" value={state.altitude_bmp} unit=" m" mini={true}/>
+            <Readout label="Altitude/ToF" value={state.altitude_tof} unit=" m" mini={true} />
+            <Readout label="Gyro[X]/LSM" value={state.gyro_lsm[0]} unit=" m°/s" mini={true} />
+            <Readout label="Gyro[Y]/LSM" value={state.gyro_lsm[1]} unit=" m°/s" mini={true} />
+            <Readout label="Gyro[Z]/LSM" value={state.gyro_lsm[2]} unit=" m°/s" mini={true} />
+            <Readout label="Accel[X]/LSM" value={state.accel_lsm[0]} unit=" mg" mini={true} />
+            <Readout label="Accel[Y]/LSM" value={state.accel_lsm[1]} unit=" mg" mini={true} />
+            <Readout label="Accel[Z]/LSM" value={state.accel_lsm[2]} unit=" mg" mini={true} />
+            <Readout label="Heading/BNO" value={state.gyro_bno[0]} unit="°" mini={true} />
+            <Readout label="Roll/BNO" value={state.gyro_bno[1]} unit="°" mini={true} />
+            <Readout label="Pitch/BNO" value={state.gyro_bno[2]} unit="°" mini={true} />
+            <Readout label="Lat/CD" value={state.lat_cd} unit="°" mini={true} />
+            <Readout label="Lon/CD" value={state.lon_cd} unit="°" mini={true} />
+            <Readout label="Lat/RTK" value={state.lat_rtk} unit="°" mini={true} />
+            <Readout label="Lon/RTK" value={state.lon_rtk} unit="°" mini={true} />
+            <Readout label="Temperature" value={state.temperature} unit=" °C" mini={true} />
+            <Readout label="Batt Voltage" value={state.esc_voltage} unit=" V" mini={true} />
+            <Readout label="Servo Voltage" value={state.servo_voltage} unit=" V" mini={true} />
+          </div>
+        </div>
       </div>
-      {/* Additional content can go here */}
     </main>
     </div>
   );
