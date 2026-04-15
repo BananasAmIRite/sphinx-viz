@@ -1,7 +1,7 @@
 # sphinx-viz
 Telemetry viewer for SPHINX, a VTVL pathfinder of a propulsively landed rocket. Reads serial stream from ground station LoRa system, unpacks binary telemetry struct, and displays in a graphical interface.
 
-<img width="957" height="654" alt="image" src="https://github.com/user-attachments/assets/08374f28-ab0b-4cac-94e1-88a526fd94e9" />
+<img width="2048" height="1172" alt="image" src="https://github.com/user-attachments/assets/7d63b1f0-5c60-43f0-b6a8-bc855c31905c" />
 
 ## Installation
 - Graphical frontend installation: `cd frontend && npm i`
