@@ -24,6 +24,16 @@ export default function Home() {
     "servo_voltage": 0.0,
     "connected": false,
     "connection_reliability": 0.0,
+    "health": [
+      ["GPS", false],
+      ["RTK", false],
+      ["BMP", false],
+      ["TOF", false],
+      ["LSM", false],
+      ["LIS", false],
+      ["BNO", false],
+      ["AUX", false],
+    ],
   });
 
   useEffect(() => {
@@ -105,16 +115,7 @@ export default function Home() {
         <div className="">
           <div className="text-gray-400 uppercase tracking-widest text-center mb-2">Health</div>
           <HealthPanel objects={
-            [
-              ["GPS", true],
-              ["RTK", false],
-              ["BMP", false],
-              ["TOF", false],
-              ["LSM", true],
-              ["LIS", false],
-              ["BNO", true],
-              ["AUX", false]
-            ]
+            state.health as [string, boolean][]
           }/>
           <div className="text-gray-400 uppercase tracking-widest text-center my-2">State Estimation</div>
           <div className="grid grid-cols-3 gap-2">

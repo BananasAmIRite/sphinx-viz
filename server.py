@@ -75,10 +75,20 @@ SENSOR_STATE = {
     "esc_voltage": 0.0,
     "servo_voltage": 0.0,
     "connected": False,
-    "connection_reliability": 0.0
+    "connection_reliability": 0.0,
+    "health": [
+        ["GPS", False],
+        ["RTK", False],
+        ["BMP", False],
+        ["TOF", False],
+        ["LSM", False],
+        ["LIS", False],
+        ["BNO", False],
+        ["AUX", False],
+    ]
 }
 
-STRUCT_FORMAT = "<11h3b4d4B"
+STRUCT_FORMAT = "<11h3b4d5B"
 STRUCT_LENGTH = struct.calcsize(STRUCT_FORMAT)
 
 CONNECTION_TIMEOUT = 5.0
@@ -118,7 +128,7 @@ def update_thread():
                 print(unpacked)
 
                 # Field offsets in <11h3b4d3B payload:
-                SENSOR_STATE["altitude_bmp"] = unpacked[0] / 4.0
+                SENSOR_STATE["altitude_bmp"] = unpacked[0] / 10.0
                 SENSOR_STATE["altitude_tof"] = unpacked[1] / 1000
                 SENSOR_STATE["gyro_lsm"] = [x * 70.0 for x in unpacked[2:5]]
                 SENSOR_STATE["accel_lsm"] = [x * 0.122 for x in unpacked[5:8]]
@@ -132,9 +142,12 @@ def update_thread():
                 SENSOR_STATE["esc_voltage"] = unpacked[19] * 16 / 255.
                 SENSOR_STATE["servo_voltage"] = unpacked[20] * 8 / 255
 
+                for i, sensor in enumerate(SENSOR_STATE["health"]):
+                    SENSOR_STATE["health"][i][1] = bool(unpacked[21] & (1 << (7-i)))
+
                 LAST_RECEIVED_TIME = time.time()
-                COUNTS.append(unpacked[21])
-                if len(COUNTS) > 20:
+                COUNTS.append(unpacked[22])
+                if len(COUNTS) > 5:
                     COUNTS.pop(0)
 
             except Exception as e:
@@ -145,7 +158,23 @@ def update_thread():
         else:
             SENSOR_STATE["connected"] = True
             if len(COUNTS) > 1:
-                SENSOR_STATE["connection_reliability"] = len(COUNTS) / ((COUNTS[-1] - COUNTS[0] + 1) % 256)
+                received_packets = 1
+                expected_packets = 1
+                for i in range(1, len(COUNTS)):
+                    delta = (COUNTS[i] - COUNTS[i - 1]) % 256
+                    if delta == 0:
+                        continue
+                    received_packets += 1
+                    expected_packets += delta
+
+                if expected_packets > 0:
+                    print("Received packets:", received_packets, "Expected packets:", expected_packets)
+                    reliability = received_packets / expected_packets
+                    SENSOR_STATE["connection_reliability"] = max(0.0, min(1.0, reliability))
+                else:
+                    SENSOR_STATE["connection_reliability"] = 0.0
+            else:
+                SENSOR_STATE["connection_reliability"] = 0.0
         time.sleep(POLL_INTERVAL)
 
 t = threading.Thread(target=update_thread, daemon=True)
